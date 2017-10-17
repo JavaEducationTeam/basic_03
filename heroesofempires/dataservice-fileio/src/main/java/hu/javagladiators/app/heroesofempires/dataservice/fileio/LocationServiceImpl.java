@@ -1,11 +1,9 @@
 package hu.javagladiators.app.heroesofempires.dataservice.fileio;
 
+import hu.javagladiators.app.heroesofempires.datamodel.base.DataAccessException;
 import hu.javagladiators.app.heroesofempires.datamodel.place.Location;
 import hu.javagladiators.app.heroesofempires.datamodel.place.LocationService;
-import hu.javagladiators.app.heroesofempires.datamodel.place.PlaceService;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
@@ -13,21 +11,25 @@ import org.dozer.Mapper;
 /**
  * @author krisztian
  */
-public class LocationServiceImpl implements LocationService,Comparator<Location>{
+public class LocationServiceImpl extends PlaceCache implements LocationService{
 
-    private PlaceService cache = new PlaceServiceImpl();
-        
+    public LocationServiceImpl() {
+        super();
+    }
+
+    
     
     @Override
     public void add(Location pValue) {
-        cache.getLocations().add(pValue);
+        getLocations().add(pValue);
         sortCache();
-        cache.save();
+        try{saveCache();}
+        catch(Exception e){throw new DataAccessException(e);}    
     }
 
     @Override
     public Location getByKey(String pName) {
-        for(Location e:cache.getLocations())
+        for(Location e:getLocations())
             if(e.getName().equals(pName))
                 return e;
         throw new NullPointerException("Not exist Province:"+pName);
@@ -35,20 +37,28 @@ public class LocationServiceImpl implements LocationService,Comparator<Location>
 
     @Override
     public List<Location> getMoreOrderByKey(int pOffset, int pLimit) {
-        if(pOffset>0 && (pOffset+pLimit)<cache.getLocations().size())
-            return cache.getLocations().subList(pLimit, pLimit+pOffset);
-        return new ArrayList<>();
+        if(pOffset>=0){
+            if((pOffset+pLimit)<getLocations().size())
+                return getLocations().subList(pOffset, pLimit+pOffset);
+            else 
+                return getLocations().subList(pOffset, getLocations().size());
+        }
+        else
+            return new ArrayList<>();
     }
 
     @Override
     public void deleteByKey(String pName) {
-        cache.getLocations().remove(getByKey(pName));
-        cache.save();
+        try{
+            cache.remove(getByKey(pName));
+            saveCache();
+        }
+        catch(Exception e){throw new DataAccessException(e);}    
     }
 
     @Override
     public long getSize() {
-        return cache.getLocations().size();
+        return getLocations().size();
     }
 
     @Override
@@ -57,17 +67,10 @@ public class LocationServiceImpl implements LocationService,Comparator<Location>
         Mapper mapper = new DozerBeanMapper();  // a get/set metodusokkal atmasolja az adatokat
         mapper.map(pNewValue, location);
         sortCache();
-        cache.save();
+        try{saveCache();}
+        catch(Exception e){throw new DataAccessException(e);}
     }
 
        
-    private void sortCache(){
-        Collections.sort(cache.getLocations(), this);
-    }
-    
-    @Override
-    public int compare(Location o1, Location o2) {
-        return o1.getName().compareTo(o2.getName());
-    }
     
 }

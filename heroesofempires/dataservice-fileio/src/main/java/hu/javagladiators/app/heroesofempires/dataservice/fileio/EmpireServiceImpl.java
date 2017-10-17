@@ -1,11 +1,9 @@
 package hu.javagladiators.app.heroesofempires.dataservice.fileio;
 
+import hu.javagladiators.app.heroesofempires.datamodel.base.DataAccessException;
 import hu.javagladiators.app.heroesofempires.datamodel.place.Empire;
 import hu.javagladiators.app.heroesofempires.datamodel.place.EmpireService;
-import hu.javagladiators.app.heroesofempires.datamodel.place.PlaceService;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
@@ -13,21 +11,25 @@ import org.dozer.Mapper;
 /**
  * @author krisztian
  */
-public class EmpireServiceImpl implements EmpireService,Comparator<Empire>{
+public class EmpireServiceImpl extends PlaceCache implements EmpireService{
 
-    private PlaceService cache = new PlaceServiceImpl();
-        
+    public EmpireServiceImpl() {
+        super();
+    }
+
+    
     
     @Override
     public void add(Empire pValue) {
-        cache.getEmpires().add(pValue);
+        getEmpires().add(pValue);
         sortCache();
-        cache.save();
+        try{saveCache();}
+        catch(Exception e){throw new DataAccessException(e);} 
     }
 
     @Override
     public Empire getByKey(String pName) {
-        for(Empire e:cache.getEmpires())
+        for(Empire e:getEmpires())
             if(e.getName().equals(pName))
                 return e;
         throw new NullPointerException("Not exist Empire:"+pName);
@@ -35,20 +37,28 @@ public class EmpireServiceImpl implements EmpireService,Comparator<Empire>{
 
     @Override
     public List<Empire> getMoreOrderByKey(int pOffset, int pLimit) {
-        if(pOffset>0 && (pOffset+pLimit)<cache.getEmpires().size())
-            return cache.getEmpires().subList(pLimit, pLimit+pOffset);
-        return new ArrayList<>();
+        if(pOffset>=0){
+            if((pOffset+pLimit)<getEmpires().size())
+                return getEmpires().subList(pOffset, pLimit+pOffset);
+            else 
+                return getEmpires().subList(pOffset, getEmpires().size());
+        }
+        else
+            return new ArrayList<>();
     }
 
     @Override
     public void deleteByKey(String pName) {
-        cache.getEmpires().remove(getByKey(pName));
-        cache.save();
+        try{
+            cache.remove(getByKey(pName));
+            saveCache();
+        }
+        catch(Exception e){throw new DataAccessException(e);} 
     }
 
     @Override
     public long getSize() {
-        return cache.getEmpires().size();
+        return getEmpires().size();
     }
 
     @Override
@@ -57,17 +67,9 @@ public class EmpireServiceImpl implements EmpireService,Comparator<Empire>{
         Mapper mapper = new DozerBeanMapper();  // a get/set metodusokkal atmasolja az adatokat
         mapper.map(pNewValue, empire);
         sortCache();
-        cache.save();
+        try{saveCache();}
+        catch(Exception e){throw new DataAccessException(e);} 
     }
 
-       
-    private void sortCache(){
-        Collections.sort(cache.getEmpires(), this);
-    }
-    
-    @Override
-    public int compare(Empire o1, Empire o2) {
-        return o1.getName().compareTo(o2.getName());
-    }
     
 }

@@ -1,13 +1,9 @@
 package hu.javagladiators.app.heroesofempires.dataservice.fileio;
 
-import hu.javagladiators.app.heroesofempires.datamodel.place.Empire;
-import hu.javagladiators.app.heroesofempires.datamodel.place.EmpireService;
-import hu.javagladiators.app.heroesofempires.datamodel.place.PlaceService;
+import hu.javagladiators.app.heroesofempires.datamodel.base.DataAccessException;
 import hu.javagladiators.app.heroesofempires.datamodel.place.Province;
 import hu.javagladiators.app.heroesofempires.datamodel.place.ProvinceService;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
@@ -15,21 +11,25 @@ import org.dozer.Mapper;
 /**
  * @author krisztian
  */
-public class ProvinceServiceImpl implements ProvinceService,Comparator<Province>{
+public class ProvinceServiceImpl extends PlaceCache implements ProvinceService{
 
-    private PlaceService cache = new PlaceServiceImpl();
-        
+    public ProvinceServiceImpl() {
+        super();
+    }
+
+    
     
     @Override
     public void add(Province pValue) {
-        cache.getProvinces().add(pValue);
+        getProvinces().add(pValue);
         sortCache();
-        cache.save();
+        try{saveCache();}
+        catch(Exception e){throw new DataAccessException(e);} 
     }
 
     @Override
     public Province getByKey(String pName) {
-        for(Province e:cache.getProvinces())
+        for(Province e:getProvinces())
             if(e.getName().equals(pName))
                 return e;
         throw new NullPointerException("Not exist Province:"+pName);
@@ -37,20 +37,28 @@ public class ProvinceServiceImpl implements ProvinceService,Comparator<Province>
 
     @Override
     public List<Province> getMoreOrderByKey(int pOffset, int pLimit) {
-        if(pOffset>0 && (pOffset+pLimit)<cache.getEmpires().size())
-            return cache.getProvinces().subList(pLimit, pLimit+pOffset);
-        return new ArrayList<>();
+        if(pOffset>=0){
+            if((pOffset+pLimit)<getProvinces().size())
+                return getProvinces().subList(pOffset, pLimit+pOffset);
+            else 
+                return getProvinces().subList(pOffset, getProvinces().size());
+        }
+        else
+            return new ArrayList<>();
     }
 
     @Override
     public void deleteByKey(String pName) {
-        cache.getProvinces().remove(getByKey(pName));
-        cache.save();
+        try{
+            cache.remove(getByKey(pName));
+            saveCache();
+        }
+        catch(Exception e){throw new DataAccessException(e);} 
     }
 
     @Override
     public long getSize() {
-        return cache.getProvinces().size();
+        return getProvinces().size();
     }
 
     @Override
@@ -59,17 +67,10 @@ public class ProvinceServiceImpl implements ProvinceService,Comparator<Province>
         Mapper mapper = new DozerBeanMapper();  // a get/set metodusokkal atmasolja az adatokat
         mapper.map(pNewValue, province);
         sortCache();
-        cache.save();
+        try{saveCache();}
+        catch(Exception e){throw new DataAccessException(e);} 
     }
 
        
-    private void sortCache(){
-        Collections.sort(cache.getProvinces(), this);
-    }
-    
-    @Override
-    public int compare(Province o1, Province o2) {
-        return o1.getName().compareTo(o2.getName());
-    }
     
 }
