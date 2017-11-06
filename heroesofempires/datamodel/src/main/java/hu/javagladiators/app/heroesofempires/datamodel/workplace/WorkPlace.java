@@ -5,12 +5,13 @@ package hu.javagladiators.app.heroesofempires.datamodel.workplace;
 
 import hu.javagladiators.app.heroesofempires.datamodel.hero.Hero;
 import hu.javagladiators.app.heroesofempires.datamodel.level.AdministratorType;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * @author krisztian
  */
-public abstract class WorkPlace {
+public abstract class WorkPlace implements Serializable{
     protected static long idgenerator =0;
     protected long id;
     protected Date validityStart;

@@ -103,9 +103,14 @@ public class HeroServiceImpl implements HeroService, Comparator<Hero>{
 
     @Override
     public List<Hero> getMoreOrderByKey(int pOffset, int pLimit) {
-        if(pOffset>=0 && (pOffset+pLimit)<cache.size())
-            return cache.subList(pOffset, pOffset+pLimit);
-        return new ArrayList<>();
+        int count = cache.size();
+        if(count<=0) return new ArrayList<>();
+            
+        if(pOffset<0) pOffset =0;
+        if(pOffset>=count) pOffset = count-1;
+        if((pOffset+pLimit) >= count) pLimit = count-pOffset;
+        
+        return cache.subList(pOffset, pLimit+pOffset);            
     }
 
     @Override

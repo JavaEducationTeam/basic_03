@@ -1,5 +1,6 @@
 package hu.javagladiators.app.heroesofempires.dataservice.fileio;
 
+import hu.javagladiators.app.heroesofempires.dataservice.fileio.place.PlaceCache;
 import hu.javagladiators.app.heroesofempires.datamodel.base.DataAccessException;
 import hu.javagladiators.app.heroesofempires.datamodel.place.Empire;
 import hu.javagladiators.app.heroesofempires.datamodel.place.EmpireService;
@@ -37,14 +38,14 @@ public class EmpireServiceImpl extends PlaceCache implements EmpireService{
 
     @Override
     public List<Empire> getMoreOrderByKey(int pOffset, int pLimit) {
-        if(pOffset>=0){
-            if((pOffset+pLimit)<getEmpires().size())
-                return getEmpires().subList(pOffset, pLimit+pOffset);
-            else 
-                return getEmpires().subList(pOffset, getEmpires().size());
-        }
-        else
-            return new ArrayList<>();
+        int count = getEmpires().size();
+        if(count<=0) return new ArrayList<>();
+            
+        if(pOffset<0) pOffset =0;
+        if(pOffset>=count) pOffset = count-1;
+        if((pOffset+pLimit) >= count) pLimit = count-pOffset;
+        
+        return getEmpires().subList(pOffset, pLimit+pOffset);            
     }
 
     @Override

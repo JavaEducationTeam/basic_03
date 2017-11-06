@@ -2,10 +2,12 @@
  */
 package hu.javagladiators.app.heroesofempires.datamodel.level;
 
+import java.io.Serializable;
+
 /**
  * @author krisztian
  */
-public class AdministratorType {
+public class AdministratorType implements Serializable{
     private byte prioritization;
 
     public AdministratorType() {

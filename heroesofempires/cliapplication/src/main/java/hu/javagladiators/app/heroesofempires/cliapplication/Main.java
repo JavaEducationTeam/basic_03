@@ -5,9 +5,19 @@
  */
 package hu.javagladiators.app.heroesofempires.cliapplication;
 
-import hu.javagladiators.app.heroesofempires.datamodel.place.Location;
-import hu.javagladiators.app.heroesofempires.datamodel.place.LocationService;
-import hu.javagladiators.app.heroesofempires.dataservice.fileio.LocationServiceImpl;
+import hu.javagladiators.app.heroesofempires.datamodel.hero.HeroService;
+import hu.javagladiators.app.heroesofempires.datamodel.level.AdministratorTypeService;
+import hu.javagladiators.app.heroesofempires.datamodel.place.Empire;
+import hu.javagladiators.app.heroesofempires.datamodel.place.EmpireService;
+import hu.javagladiators.app.heroesofempires.datamodel.workplace.WorkPlaceEmpire;
+import hu.javagladiators.app.heroesofempires.datamodel.workplace.WorkPlaceEmpireService;
+import hu.javagladiators.app.heroesofempires.dataservice.fileio.AdministratorTypeServiceImpl;
+import hu.javagladiators.app.heroesofempires.dataservice.fileio.EmpireServiceImpl;
+import hu.javagladiators.app.heroesofempires.dataservice.fileio.HeroServiceImpl;
+import hu.javagladiators.app.heroesofempires.dataservice.fileio.WorkPlaceEmpireServiceImpl;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
 
 /**
  * @author krisztian
@@ -15,11 +25,32 @@ import hu.javagladiators.app.heroesofempires.dataservice.fileio.LocationServiceI
 public class Main {
 
     public static void main(String[] args){
-        LocationService ls = new LocationServiceImpl();
-        for(Location l:ls.getMoreOrderByKey(0, 2))
-            System.out.println(l.getName());
-        ls.deleteByKey("City 01");
+        WorkPlaceEmpireService wpeService = new WorkPlaceEmpireServiceImpl();
+        HeroService heroService = new HeroServiceImpl();
+        EmpireService empireService = new EmpireServiceImpl();
+        AdministratorTypeService aService =new AdministratorTypeServiceImpl();
         
+        long ts = System.currentTimeMillis();
         
+        Random rnd = new Random();
+        long oneyear = 356*24*60*60*1000000;
+        Empire empire = empireService.getMoreOrderByKey(0, (int)empireService.getSize()).get(0);
+        heroService.getMoreOrderByKey(0, (int)heroService.getSize()).stream()
+                .forEach(hero ->{
+                    WorkPlaceEmpire wpe = new WorkPlaceEmpire();
+                    wpe.setHero(hero);
+                    wpe.setEmpire(empire);
+                    wpe.setValidityStart(new Date(ts));
+                    wpe.setValidityEnd(new Date(ts+oneyear));
+                    wpe.setType(aService.getMoreOrderByKey(0, (int)aService.getSize()).get(rnd.nextInt((int)aService.getSize())));
+                    wpeService.add(wpe);
+                });
+        
+        List<WorkPlaceEmpire> protectives= wpeService.getWorkPlaceByType(empire, new Date(ts));
+    
+        protectives.stream().forEach(p -> 
+                System.out.println(p.getHero().getName()+":"+
+                        p.getEmpire().getName()+":"+
+                        p.getType().getPrioritization()));
     }
 }

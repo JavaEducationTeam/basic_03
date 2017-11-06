@@ -1,4 +1,4 @@
-package hu.javagladiators.app.heroesofempires.dataservice.fileio;
+package hu.javagladiators.app.heroesofempires.dataservice.fileio.place;
 
 import hu.javagladiators.app.heroesofempires.datamodel.base.DataAccessException;
 import hu.javagladiators.app.heroesofempires.datamodel.place.Empire;
@@ -72,21 +72,21 @@ public class PlaceCache implements Serializable,Comparator<Location>{
 
     public List<Location> getLocations() {
         return cache.stream()
-            .filter(tmp -> tmp.getClass().isAssignableFrom(Location.class))
+            .filter(tmp -> tmp instanceof Location)
             .collect(Collectors.toList());
     }
 
 
     public List<Province> getProvinces() {
         return (List<Province>) cache.stream()
-            .filter(tmp -> tmp.getClass().isAssignableFrom(Province.class))
+            .filter(tmp -> tmp instanceof Province)
             .collect((Collector<? super Location, ?, ?>) Collectors.toList());
     }
 
 
     public List<Empire> getEmpires() {
         return (List<Empire>) cache.stream()
-            .filter(tmp -> tmp.getClass().isAssignableFrom(Empire.class))
+            .filter(tmp -> tmp instanceof Empire)
             .collect((Collector<? super Location, ?, ?>) Collectors.toList());
     }
 

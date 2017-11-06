@@ -1,5 +1,6 @@
 package hu.javagladiators.app.heroesofempires.dataservice.fileio;
 
+import hu.javagladiators.app.heroesofempires.dataservice.fileio.place.PlaceCache;
 import hu.javagladiators.app.heroesofempires.datamodel.base.DataAccessException;
 import hu.javagladiators.app.heroesofempires.datamodel.place.Location;
 import hu.javagladiators.app.heroesofempires.datamodel.place.LocationService;

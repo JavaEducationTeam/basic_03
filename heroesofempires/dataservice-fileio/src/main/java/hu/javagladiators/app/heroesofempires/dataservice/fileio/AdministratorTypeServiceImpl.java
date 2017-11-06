@@ -20,93 +20,111 @@ import java.util.Properties;
 /**
  * @author krisztian
  */
-public class AdministratorTypeServiceImpl implements AdministratorTypeService, Comparator<AdministratorType>{
+public class AdministratorTypeServiceImpl implements AdministratorTypeService, Comparator<AdministratorType> {
 
     private static final String defaultFilePath = "level.properties";
     private static final List<AdministratorType> cache = new ArrayList<>();
 
     public AdministratorTypeServiceImpl() {
-        if(cache.isEmpty()){
+        if (cache.isEmpty()) {
             File f = new File(defaultFilePath);
-            if(f.exists())
-                try{
+            if (f.exists()) {
+                try {
                     loadData();
                     sortCache();
+                } catch (Exception e) {/*hibakezeles*/
+                    initData();
+                    try {
+                        saveCache();
+                    } catch (Exception e0) {/*hibakezeles*/
+                    }
                 }
-                catch(Exception e){/*hibakezeles*/}
-            else{
-                initData();                
-                try{saveCache();}
-                catch(Exception e){/*hibakezeles*/}
+            } else {
+                initData();
+                try {
+                    saveCache();
+                } catch (Exception e) {/*hibakezeles*/
+                }
             }
         }
     }
 
-        
-    private void initData(){
-        cache.add(new AdministratorType((byte)1));
-        cache.add(new AdministratorType((byte)2));
-        cache.add(new AdministratorType((byte)3));
+    private void initData() {
+        cache.add(new AdministratorType((byte) 1));
+        cache.add(new AdministratorType((byte) 2));
+        cache.add(new AdministratorType((byte) 3));
     }
-    
-    private void loadData() throws FileNotFoundException, IOException{
+
+    private void loadData() throws FileNotFoundException, IOException {
         Properties properties = new Properties();
         properties.load(new FileReader(defaultFilePath));
         Enumeration<Object> enm = properties.elements();
         Object key;
-        while(enm.hasMoreElements()){
+        while (enm.hasMoreElements()) {
             key = enm.nextElement();
-            cache.add(new AdministratorType(Byte.parseByte((String)key)));
-        }                    
+            cache.add(new AdministratorType(Byte.parseByte((String) key)));
+        }
     }
-    
-    private void saveCache() throws FileNotFoundException, IOException{
+
+    private void saveCache() throws FileNotFoundException, IOException {
         Properties properties = new Properties();
-        for(AdministratorType t : cache)
-            properties.setProperty(""+t.getPrioritization(), "..");
+        for (AdministratorType t : cache) {
+            properties.setProperty("" + t.getPrioritization(), "..");
+        }
         OutputStream output = new FileOutputStream(defaultFilePath);
         properties.store(output, null);
     }
-    
-    private void sortCache(){
+
+    private void sortCache() {
         Collections.sort(cache, this);
     }
-    
+
     @Override
     public int compare(AdministratorType o1, AdministratorType o2) {
-        return (o1.getPrioritization()>o2.getPrioritization())?1:-1;
+        return (o1.getPrioritization() > o2.getPrioritization()) ? 1 : -1;
     }
 
     @Override
     public void add(AdministratorType pValue) {
         cache.add(pValue);
-        try{
+        try {
             sortCache();
             saveCache();
+        } catch (Exception e) {
+            throw new DataAccessException(e);
         }
-        catch(Exception e){throw new DataAccessException(e);}
     }
 
     @Override
     public AdministratorType getByKey(Byte pName) {
-        for(AdministratorType a : cache)
-            if(a.getPrioritization() == pName )
+        for (AdministratorType a : cache) {
+            if (a.getPrioritization() == pName) {
                 return a;
+            }
+        }
         throw new NullPointerException();
     }
 
     @Override
     public List<AdministratorType> getMoreOrderByKey(int pOffset, int pLimit) {
-        if(pOffset>0 && (pOffset+pLimit)<cache.size())
-            return cache.subList(pLimit, pLimit+pOffset);
-        return new ArrayList<>();
+        int count = cache.size();
+        if(count<=0) return new ArrayList<>();
+            
+        if(pOffset<0) pOffset =0;
+        if(pOffset>=count) pOffset = count-1;
+        if((pOffset+pLimit) >= count) pLimit = count-pOffset;
+        
+        return cache.subList(pOffset, pLimit+pOffset);            
     }
 
     @Override
     public void deleteByKey(Byte pName) {
         cache.remove(getByKey(pName));
-        try{saveCache();}
-        catch(Exception e){throw new DataAccessException(e);}
+        try {
+            saveCache();
+        } catch (Exception e) {
+            throw new DataAccessException(e);
+        }
     }
 
     @Override
@@ -117,8 +135,11 @@ public class AdministratorTypeServiceImpl implements AdministratorTypeService, C
     @Override
     public void modify(Byte pOldKey, AdministratorType pNewValue) {
         getByKey(pOldKey).setPrioritization(pNewValue.getPrioritization());
-        try{saveCache();}
-        catch(Exception e){throw new DataAccessException(e);}
+        try {
+            saveCache();
+        } catch (Exception e) {
+            throw new DataAccessException(e);
+        }
     }
-        
+
 }

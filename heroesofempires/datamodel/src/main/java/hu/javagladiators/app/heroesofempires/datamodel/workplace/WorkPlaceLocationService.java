@@ -1,10 +1,10 @@
 package hu.javagladiators.app.heroesofempires.datamodel.workplace;
 
-import hu.javagladiators.app.heroesofempires.datamodel.base.DataAccessService;
+import hu.javagladiators.app.heroesofempires.datamodel.place.Location;
 
 /**
  * @author krisztian
  */
-public interface WorkPlaceLocationService extends DataAccessService<WorkPlaceLocation, Long>{
+public interface WorkPlaceLocationService extends WorkPlaceService<WorkPlaceLocation, Location>{
     
 }

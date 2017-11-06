@@ -2,12 +2,14 @@
  */
 package hu.javagladiators.app.heroesofempires.datamodel.hero;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * @author krisztian
  */
-public class Hero {
+public class Hero implements Serializable{
+    
     private String name;
     private String description;
     private boolean available;
